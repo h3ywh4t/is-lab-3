@@ -11,6 +11,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "human_beings")
+@org.hibernate.annotations.Cache(usage = org.hibernate.annotations.CacheConcurrencyStrategy.READ_WRITE)
 @Getter
 @Setter
 @NoArgsConstructor

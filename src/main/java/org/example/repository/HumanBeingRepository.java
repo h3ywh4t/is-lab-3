@@ -3,6 +3,7 @@ package org.example.repository;
 import org.example.entity.HumanBeing;
 import org.example.entity.Mood;
 import org.example.entity.WeaponType;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,6 +18,8 @@ import java.util.Optional;
 @Repository
 public interface HumanBeingRepository extends JpaRepository<HumanBeing, Long> {
 
+    @Override
+    @Cacheable(value = "humanBeing", key = "#id")
     Optional<HumanBeing> findById(Long id);
 
     Page<HumanBeing> findAll(Pageable pageable);
