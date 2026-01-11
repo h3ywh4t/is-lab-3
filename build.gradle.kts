@@ -20,10 +20,16 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
 
     runtimeOnly("org.postgresql:postgresql")
+    implementation("com.zaxxer:HikariCP")
 
-    implementation("org.hibernate.orm:hibernate-core:6.4.0.Final")
+    implementation(platform("org.infinispan:infinispan-bom:15.2.6.Final"))
+
+    implementation("org.infinispan:infinispan-hibernate-cache-v62")
+
+    implementation("io.minio:minio:8.5.7")
 
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
