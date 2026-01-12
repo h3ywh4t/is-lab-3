@@ -130,4 +130,30 @@ public class ImportController {
                     .body(Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping("/download/{importId}")
+    public ResponseEntity<?> downloadFile(@PathVariable Long importId) {
+        try {
+            byte[] fileData = importService.downloadFile(importId);
+
+            List<ImportHistoryDTO> historyList = importService.getImportHistory("admin");
+            ImportHistoryDTO history = historyList.stream()
+                    .filter(h -> h.getId() != null && h.getId().equals(importId))
+                    .findFirst()
+                    .orElse(null);
+            
+            String fileName = history != null ? history.getFileName() : "file_" + importId;
+            String contentType = fileName != null && fileName.toLowerCase().endsWith(".json") 
+                    ? "application/json" 
+                    : "text/csv";
+            
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                    .contentType(org.springframework.http.MediaType.parseMediaType(contentType))
+                    .body(fileData);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
 }

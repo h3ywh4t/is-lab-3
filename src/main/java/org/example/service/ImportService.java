@@ -528,6 +528,17 @@ public class ImportService {
         importHistoryRepository.deleteAll();
     }
 
+    public byte[] downloadFile(Long importId) throws Exception {
+        ImportHistory history = importHistoryRepository.findById(importId)
+                .orElseThrow(() -> new RuntimeException("Import history not found: " + importId));
+        
+        if (history.getFilePath() == null || history.getFilePath().isEmpty()) {
+            throw new RuntimeException("File path not found for import: " + importId);
+        }
+        
+        return minIOService.downloadFile(history.getFilePath());
+    }
+
     private ImportHistoryDTO toDTO(ImportHistory history) {
         ImportHistoryDTO dto = new ImportHistoryDTO();
         dto.setId(history.getId());
