@@ -24,4 +24,5 @@ public class ImportHistoryDTO {
     private Integer failedRecords;
     private String errorMessage;
     private Integer currentProgress;
+    private String filePath;
 }

@@ -20,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.ArrayList;
 
 @Service
 public class ImportService {
@@ -38,6 +39,12 @@ public class ImportService {
 
     @Autowired
     private WebSocketNotificationService notificationService;
+
+    @Autowired
+    private MinIOService minIOService;
+
+    @Autowired
+    private DistributedTransactionService distributedTransactionService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ExecutorService executorService = Executors.newFixedThreadPool(5);
@@ -113,12 +120,33 @@ public class ImportService {
             history.setTotalRecords(dtos.size());
             importHistoryRepository.save(history);
 
-            importRecords(dtos, historyId, fileName);
+            String objectName = "import/" + historyId + "_" + System.currentTimeMillis() + "_" + fileName;
+
+            List<DistributedTransactionService.TransactionPhase> phases = new ArrayList<>();
+
+            DistributedTransactionService.TransactionPhase minIOPhase = 
+                    distributedTransactionService.createMinIOPhase(objectName, file);
+            phases.add(minIOPhase);
+
+            distributedTransactionService.executeDistributedTransaction(
+                    phases,
+                    () -> {
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+
+                        importRecords(dtos, historyId, fileName);
+                        return null;
+                    }
+            );
 
             history = importHistoryRepository.findById(historyId).orElse(history);
             history.setStatus(ImportHistory.ImportStatus.COMPLETED);
             history.setCurrentProgress(100);
             history.setEndTime(new Date());
+            history.setFilePath(objectName);
             importHistoryRepository.save(history);
 
             sendProgress(historyId, fileName, dtos.size(), dtos.size(),
@@ -515,6 +543,7 @@ public class ImportService {
         dto.setFailedRecords(history.getFailedRecords());
         dto.setErrorMessage(history.getErrorMessage());
         dto.setCurrentProgress(history.getCurrentProgress());
+        dto.setFilePath(history.getFilePath());
         return dto;
     }
 }

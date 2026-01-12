@@ -59,6 +59,9 @@ public class ImportHistory {
     @Column(name = "current_progress")
     private Integer currentProgress;
 
+    @Column(name = "file_path")
+    private String filePath;
+
     public enum ImportStatus {
         IN_PROGRESS,
         COMPLETED,
