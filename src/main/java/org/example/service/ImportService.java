@@ -131,6 +131,7 @@ public class ImportService {
         }
     }
 
+    @org.example.annotation.LogCacheStatistics
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_COMMITTED)
     public void importRecords(List<HumanBeingDTO> dtos, Long historyId, String fileName) {
         int successful = 0;

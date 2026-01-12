@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.example.annotation.LogCacheStatistics;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +35,7 @@ public class HumanBeingService {
     @Autowired
     private HumanBeingMapper mapper;
 
+    @org.example.annotation.LogCacheStatistics
     public Page<HumanBeingDTO> getAllHumanBeings(Pageable pageable, String filterBy, String filterValue) {
         Page<HumanBeing> result;
 
@@ -61,6 +63,7 @@ public class HumanBeingService {
         return result.map(mapper::toDTO);
     }
 
+    @org.example.annotation.LogCacheStatistics
     public HumanBeingDTO getHumanBeingById(Long id) {
         return humanBeingRepository.findById(id)
                 .map(mapper::toDTO)
