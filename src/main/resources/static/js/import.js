@@ -300,12 +300,17 @@ function displayHistory(history) {
     tbody.innerHTML = '';
 
     if (history.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="12">No import history found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="13">No import history found</td></tr>';
         return;
     }
 
     history.forEach(item => {
         const row = document.createElement('tr');
+        const canDownload = item.status === 'COMPLETED' && item.filePath;
+        const downloadButton = canDownload 
+            ? `<button class="btn btn-small btn-primary" onclick="downloadFile(${item.id}, '${item.fileName}')">Download</button>`
+            : '<span style="color: #999;">-</span>';
+        
         row.innerHTML = `
             <td>${item.id}</td>
             <td>${item.fileName}</td>
@@ -319,6 +324,7 @@ function displayHistory(history) {
             <td>${item.failedRecords || 0}</td>
             <td>${item.currentProgress || 0}%</td>
             <td>${item.errorMessage || '-'}</td>
+            <td>${downloadButton}</td>
         `;
         tbody.appendChild(row);
     });
@@ -329,6 +335,29 @@ function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleString();
 }
+
+async function downloadFile(importId, fileName) {
+    try {
+        const response = await fetch(`/api/import/download/${importId}`);
+        if (!response.ok) {
+            throw new Error('Failed to download file');
+        }
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    } catch (error) {
+        alert('Failed to download file: ' + error.message);
+    }
+}
+
+window.downloadFile = downloadFile;
 
 async function clearImportHistory() {
     const userName = document.getElementById('history-user-name').value || 'user';
